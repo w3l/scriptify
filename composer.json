@@ -1,0 +1,24 @@
+{
+    "name": "w3l/scriptify",
+    "description": "Move inline javascripts to automatically generated external files.",
+    "license": ["MIT"],
+    "keywords": [
+        "javascript"
+    ],
+    "homepage": "https://github.com/w3l/scriptify",
+    "support": {
+        "issues": "https://github.com/w3l/scriptify/issues",
+        "docs": "https://github.com/w3l/scriptify",
+        "source": "https://github.com/w3l/scriptify"
+    },
+    "type": "library",
+    "require": {
+        "php": ">=5.6.0"
+    },
+    "require-dev": {
+        "phpdocumentor/phpdocumentor": "*"
+    },
+    "autoload": {
+        "psr-4": {"w3l\\": "src/"}
+    }
+}
