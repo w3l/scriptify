@@ -1,6 +1,8 @@
 <?php
 namespace w3l;
 
+use MatthiasMullie\Minify;
+
 class scriptify
 {
     public function __construct() { }
