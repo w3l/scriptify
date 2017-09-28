@@ -1,10 +1,9 @@
 <?php
 namespace w3l;
 
-use MatthiasMullie\Minify;
-
 class scriptify
 {
+    
     public function __construct() { }
     
     /**
@@ -20,7 +19,7 @@ class scriptify
         $queryStringLimit = 3800; // Preconfigurated for apache Apache
         
         switch (count($params)) {
-            // URI and Javascript is set
+            // Javascript is set
             case 1:
                 $js = $params[0];
                 break;
@@ -42,9 +41,13 @@ class scriptify
         
         $js = str_replace(array("<script>", "</script>"), "", $js); // @todo: Should keep any additional Javascript tags.
         
-        $minifier = new MatthiasMullie\Minify\JS($js);
-        $js = $minifier->minify();
+        if(class_exists('\\MatthiasMullie\\Minify\\JS')) {
+        
+            $minifier = new \MatthiasMullie\Minify\JS($js);
+            $js = $minifier->minify();
 
+        }
+        
         $js_base64 = base64_encode($js);
         
         /**
