@@ -61,7 +61,7 @@ class scriptify
         $hash = hash('sha384', $js, true);
         $hash_base64 = base64_encode($hash);
         
-        return '<script src="'$scriptURI.urlencode($js_base64).'" integrity="sha384-'.$hash_base64.'"></script>';
+        return '<script src="'.$scriptURI.urlencode($js_base64).'" integrity="sha384-'.$hash_base64.'"></script>';
     }
     
     static function decode($js)
