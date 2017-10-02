@@ -4,13 +4,59 @@ namespace w3l;
 class scriptify
 {
     
+    /** @var string $scriptAttributes Any additional script attributes */
+    protected $scriptAttributes = "";
+    
     public function __construct() { }
     
     /**
      *
-
      */
-    static function encode(...$params)
+    protected function extractJSandAttributes($input)
+    {
+
+        $openingChars = strtolower(substr($input, 0, 8));
+
+        if($openingChars == '<script>') {
+            $input = str_ireplace(array("<script>", "</script>"), "", $input);
+        /*
+         * Possible attributes, do resource demanding DOMDocument stuff. :)
+         */
+        } elseif($openingChars == '<script ') {
+            
+            $doc = new \DOMDocument();
+            if ($doc->loadHTML(mb_convert_encoding($input, "ISO-8859-1"))) { // Needed because loadHTML expects ISO-8859-1
+
+                $tags = $doc->getElementsByTagName('script')->item(0);
+
+                $input = $tags->nodeValue;
+                
+                if ($tags->hasAttributes()) {
+                    foreach ($tags->attributes as $attr) {
+                        if ($attr->nodeName != "src" && $attr->nodeName != "integrity") {
+                            $this->scriptAttributes .= " " . $attr->nodeName . ($attr->nodeValue != "" ? '="'.$attr->nodeValue.'"' : '');
+                        }
+                    }
+                }
+            }
+        }
+        /* Fallback */
+        if(strtolower(substr($input, 0, 7)) == '<script') {
+
+            preg_match_all("|<script[^>]+>(.*)</[^>]+>|Usi", $input, $result, PREG_SET_ORDER);
+            
+            if(isset($result[0][1])) {
+                $input = $result[0][1];
+            }
+        }
+        
+        return $input;
+    }
+    
+    /**
+     * Takes content of a script, encode it and return a script tag.
+     */
+    public function encode(...$params)
     {
         /*
          * Default values
@@ -38,10 +84,16 @@ class scriptify
                 throw new Exception('Wrong number of parameters');
                 break;
         }
-        
-        $js = str_replace(array("<script>", "</script>"), "", $js); // @todo: Should keep any additional Javascript tags.
-        
-        if(class_exists('\\MatthiasMullie\\Minify\\JS')) {
+
+        /**
+         * Removing script tag and copying any attributes.
+         */
+        if (strtolower(substr(ltrim($js), 0, 7)) == '<script') {
+            
+            $js = $this->extractJSandAttributes(ltrim($js));
+        }
+
+        if (class_exists('\\MatthiasMullie\\Minify\\JS')) {
         
             $minifier = new \MatthiasMullie\Minify\JS($js);
             $js = $minifier->minify();
@@ -66,10 +118,10 @@ class scriptify
         $hash = hash('sha384', $js, true);
         $hash_base64 = base64_encode($hash);
         
-        return '<script src="'.$scriptURI.urlencode($js_base64).'" integrity="sha384-'.$hash_base64.'"></script>';
+        return '<script src="'.$scriptURI.urlencode($js_base64).'" integrity="sha384-'.$hash_base64.'"'.$this->scriptAttributes.'></script>';
     }
     
-    static function decode($js)
+    public function decode($js)
     {
         return base64_decode($js);
     }
